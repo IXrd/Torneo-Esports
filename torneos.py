@@ -181,34 +181,34 @@ if __name__ == "__main__":
     
     print("\n--- Creación de Equipos ---")
     unibe = Equipo("UNIBE")
-    pucmm = Equipo("PUCMM")
+    barna = Equipo("BARNA")
     
     mi_torneo.agregar_equipo(unibe)
-    mi_torneo.agregar_equipo(pucmm)
+    mi_torneo.agregar_equipo(barna)
     
     print("\n--- Registro de Jugadores ---")
     brian = Jugador("Brian Melo", "MeloCS")
     andres = Jugador("Andres Sanches", "Fat_")
     
     unibe.agregar_jugador(brian)
-    pucmm.agregar_jugador(andres)
+    barna.agregar_jugador(andres)
     
     print(brian)
     print(andres)
     
     print("\n--- Programación de Partidos ---")
-    match_clasico = mi_torneo.programar_partido("UNIBE", "PUCMM")
+    match_clasico = mi_torneo.programar_partido("UNIBE", "BARNA")
     print(match_clasico)
     
     print("\n--- Resolviendo Marcadores (Ejecución de Match) ---")
     if match_clasico:
         match_clasico.registrar_marcador(3, 1)
-        brian.sumar_puntos(30)
+        brian.sumar_puntos(3)
         print(match_clasico)
         
     print("\n--- Estado de las Escuadras Post-Match ---")
     print(unibe)
-    print(pucmm)
+    print(barna)
     
     mi_torneo.tabla_posiciones()
     
@@ -226,7 +226,7 @@ if __name__ == "__main__":
     print("--- Verificación de Robustez de Reglas del Negocio (Tratamiento de Errores) ---")
     try:
         print("Intentando registrar un marcador con empate (No permitido)...")
-        partido_invalido = Partido(unibe, pucmm)
+        partido_invalido = Partido(unibe, barna)
         partido_invalido.registrar_marcador(2, 2)
     except AssertionError as error:
         print(f"Capturado correctamente por seguridad del sistema: [AssertionError] -> {error}")
