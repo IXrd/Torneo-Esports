@@ -29,7 +29,7 @@ class Equipo:
         assert len(self.jugadores) < 5, "El equipo ya alcanzó el máximo de 5 jugadores."
         jugador.equipo = self.nombre
         self.jugadores.append(jugador)
-        print(f"√ {jugador.gamertag} se unió al equipo {self.nombre}")
+        print(f"[OK] {jugador.gamertag} se unió al equipo {self.nombre}")
 
     def registrar_resultado(self, gano: bool):
         if gano:
@@ -38,7 +38,7 @@ class Equipo:
             self.perdidos += 1
 
     def __str__(self):
-        return f"ˆ Equipo {self.nombre} | Jugadores: {len(self.jugadores)} | Récord: {self.ganados}V-{self.perdidos}D"
+        return f"Equipo {self.nombre} | Jugadores: {len(self.jugadores)} | Récord: {self.ganados}V-{self.perdidos}D"
 
 
 class Partido:
@@ -77,35 +77,43 @@ class Partido:
 class Torneo:
     def __init__(self, nombre: str):
         self.nombre = nombre
-        self.equipos = {}
+        self.equipos = []
         self.partidos = []
 
     def agregar_equipo(self, equipo: Equipo):
-        if equipo.nombre not in self.equipos:
-            self.equipos[equipo.nombre] = equipo
+        if self.buscar_equipo(equipo.nombre) is not None:
+            print("/!\ Ya existe un equipo con ese nombre.")
         else:
-            print(f"El equipo {equipo.nombre} ya está registrado en el torneo.")
+            self.equipos.append(equipo)
+            print(f"@ Equipo agregado al torneo: {equipo.nombre}")
 
     def buscar_equipo(self, nombre_equipo: str) -> Equipo:
-        return self.equipos.get(nombre_equipo, None)
+        for eq in self.equipos:
+            if eq.nombre == nombre_equipo:
+                return eq
+        return None
 
-    def programar_partido(self, equipo1_nombre: str, equipo2_nombre: str) -> Partido:
-        eq1 = self.buscar_equipo(equipo1_nombre)
-        eq2 = self.buscar_equipo(equipo2_nombre)
-        
-        if eq1 and eq2:
+    def programar_partido(self, nombre_equipo1: str, nombre_equipo2: str) -> Partido:
+        try:
+            eq1 = self.buscar_equipo(nombre_equipo1)
+            eq2 = self.buscar_equipo(nombre_equipo2)
+            
+            if not eq1 or not eq2:
+                raise ValueError(f"Uno o ambos equipos no están registrados: {nombre_equipo1}, {nombre_equipo2}")
+            
             nuevo_partido = Partido(eq1, eq2)
             self.partidos.append(nuevo_partido)
+            print(f"@ Partido programado exitosamente: {eq1.nombre} vs {eq2.nombre}")
             return nuevo_partido
-        else:
-            print("Error: Uno o ambos equipos no se encuentran registrados.")
+        except ValueError as error:
+            print(f"X {error}")
             return None
 
     def tabla_posiciones(self):
         print(f"\n=== TABLA DE POSICIONES - {self.nombre.upper()} ===")
-        equipos_ordenados = sorted(self.equipos.values(), key=lambda x: (x.ganados, -x.perdidos), reverse=True)
+        equipos_ordenados = sorted(self.equipos, key=lambda x: x.ganados, reverse=True)
         for idx, eq in enumerate(equipos_ordenados, 1):
-            print(f"{idx}. {eq.nombre} | Récord: {eq.ganados}V-{eq.perdidos}D | Integrantes: {len(eq.jugadores)}")
+            print(f"{idx}º {eq}")
         print("=========================================\n")
 
     def guardar_datos(self, archivo: str = "torneo_datos.json"):
@@ -115,7 +123,7 @@ class Torneo:
                 "equipos": []
             }
             
-            for eq in self.equipos.values():
+            for eq in self.equipos:
                 info_equipo = {
                     "nombre": eq.nombre,
                     "ganados": eq.ganados,
@@ -132,24 +140,18 @@ class Torneo:
                 
             with open(archivo, 'w', encoding='utf-8') as f:
                 json.dump(datos_serializados, f, indent=4, ensure_ascii=False)
-            print(f"√ Estado del torneo guardado exitosamente en '{archivo}'.")
+            print("> Datos del torneo guardados exitosamente.")
             
-        except IOError as e:
-            print(f"Error de E/S al intentar escribir en el archivo {archivo}: {e}")
-        except Exception as e:
-            print(f"Ocurrió un error inesperado al guardar los datos: {e}")
+        except (IOError, OSError) as error:
+            print(f"X Error al guardar los datos: {error}")
 
     def cargar_datos(self, archivo: str = "torneo_datos.json"):
         try:
-            if not os.path.exists(archivo):
-                print(f"El archivo '{archivo}' no existe. Iniciando torneo vacío.")
-                return
-
             with open(archivo, 'r', encoding='utf-8') as f:
                 datos = json.load(f)
                 
             self.nombre = datos.get("nombre_torneo", self.nombre)
-            self.equipos = {}
+            self.equipos = []
             self.partidos = []
             
             for data_eq in datos.get("equipos", []):
@@ -162,79 +164,104 @@ class Torneo:
                     nuevo_jugador.puntos = data_jug["puntos"]
                     nuevo_equipo.jugadores.append(nuevo_jugador)
                     
-                self.equipos[nuevo_equipo.nombre] = nuevo_equipo
+                self.equipos.append(nuevo_equipo)
                 
-            print(f"√ Estado del torneo cargado exitosamente desde '{archivo}'.")
+            print(f"> Datos cargados exitosamente: {len(self.equipos)} equipos.")
             
+        except FileNotFoundError:
+            print("X No se encontró el archivo de datos. Se iniciará un torneo vacío.")
         except json.JSONDecodeError:
-            print(f"Error: El archivo '{archivo}' está dañado o no posee un formato JSON válido.")
-        except IOError as e:
-            print(f"Error de E/S al intentar leer el archivo {archivo}: {e}")
-        except Exception as e:
-            print(f"Ocurrió un error inesperado al cargar los datos: {e}")
+            print("X El archivo de datos está corrupto o mal formado.")
+        except (IOError, OSError) as error:
+            print(f"X Error al cargar los datos: {error}")
 
 
 if __name__ == "__main__":
     print("=== INICIANDO SISTEMA DE GESTIÓN DE ESPORTS ===")
     
-    mi_torneo = Torneo("Interuniversitario de Esports 2026")
+    # 1. Crear el torneo y cargar datos previos
+    torneo = Torneo("Copa UNIBE Esports")
     
-    print("\n--- Creación de Equipos ---")
-    unibe = Equipo("UNIBE")
-    pucmm = Equipo("PUCMM")
+    # 2. Intentar cargar_datos() al inicio (para probar el caso de archivo inexistente)
+    torneo.cargar_datos()
     
-    mi_torneo.agregar_equipo(unibe)
-    mi_torneo.agregar_equipo(pucmm)
+    # 3. Crear equipos y jugadores; agregarlos al torneo
+    print("\n--- Creación de Equipos y Jugadores ---")
+    eq_dragones = Equipo("Dragones")
+    eq_titanes = Equipo("Titanes")
+    eq_fenix = Equipo("Fenix")
+    eq_valquirias = Equipo("Valquirias")
     
-    print("\n--- Registro de Jugadores ---")
-    brian = Jugador("Brian Melo", "MeloCS")
-    andres = Jugador("Andres Sanches", "Fat_")
+    torneo.agregar_equipo(eq_dragones)
+    torneo.agregar_equipo(eq_titanes)
+    torneo.agregar_equipo(eq_fenix)
+    torneo.agregar_equipo(eq_valquirias)
     
-    unibe.agregar_jugador(brian)
-    pucmm.agregar_jugador(andres)
+    # Agregar al menos 2 jugadores por equipo
+    eq_dragones.agregar_jugador(Jugador("Juan Perez", "DragonLord"))
+    eq_dragones.agregar_jugador(Jugador("Luis Gomez", "FireBreath"))
     
-    print(brian)
-    print(andres)
+    eq_titanes.agregar_jugador(Jugador("Carlos Ruiz", "TitanShifter"))
+    eq_titanes.agregar_jugador(Jugador("Pedro Diaz", "Colossus"))
     
+    eq_fenix.agregar_jugador(Jugador("Ana Martinez", "PhoenixRise"))
+    eq_fenix.agregar_jugador(Jugador("Sofia Lopez", "Rebirth"))
+    
+    eq_valquirias.agregar_jugador(Jugador("Maria Castro", "Valkyrie"))
+    eq_valquirias.agregar_jugador(Jugador("Elena Gil", "ShieldMaiden"))
+    
+    # 4. Programar partidos y registrar marcadores (sin empates)
     print("\n--- Programación de Partidos ---")
-    match_clasico = mi_torneo.programar_partido("UNIBE", "PUCMM")
-    print(match_clasico)
+    partido1 = torneo.programar_partido("Dragones", "Titanes")
+    partido2 = torneo.programar_partido("Fenix", "Valquirias")
+    partido3 = torneo.programar_partido("Dragones", "Fenix")
     
-    print("\n--- Resolviendo Marcadores (Ejecución de Match) ---")
-    if match_clasico:
-        match_clasico.registrar_marcador(3, 1)
-        brian.sumar_puntos(30)
-        print(match_clasico)
+    print("\n--- Registro de Resultados ---")
+    if partido1:
+        partido1.registrar_marcador(3, 1)
+    if partido2:
+        partido2.registrar_marcador(2, 3)
+    if partido3:
+        partido3.registrar_marcador(3, 0)
         
-    print("\n--- Estado de las Escuadras Post-Match ---")
-    print(unibe)
-    print(pucmm)
+    # 5. Demostrar los tres casos de error controlado
+    print("\n--- Demostrando Casos de Error Controlado ---")
     
-    mi_torneo.tabla_posiciones()
+    # Caso 1: Equipo inexistente
+    print("\n[Caso de Error 1] Intentando programar partido con un equipo que no existe:")
+    torneo.programar_partido("Dragones", "TitanesInexistentes")
     
-    print("--- Probando Persistencia de Datos (Escritura y Lectura) ---")
-    nombre_archivo_test = "torneo_datos.json"
-    
-    mi_torneo.guardar_datos(nombre_archivo_test)
-    
-    torneo_clonado = Torneo("Torneo Temporal Vacío")
-    torneo_clonado.cargar_datos(nombre_archivo_test)
-    
-    print(f"\nNombre del torneo restaurado: {torneo_clonado.nombre}")
-    torneo_clonado.tabla_posiciones()
-    
-    print("--- Verificación de Robustez de Reglas del Negocio (Tratamiento de Errores) ---")
+    # Caso 2: Empate atrapado con try/except
+    print("\n[Caso de Error 2] Intentando registrar un marcador con empate (No permitido):")
     try:
-        print("Intentando registrar un marcador con empate (No permitido)...")
-        partido_invalido = Partido(unibe, pucmm)
-        partido_invalido.registrar_marcador(2, 2)
+        if partido1:
+            partido1.registrar_marcador(2, 2)
     except AssertionError as error:
-        print(f"Capturado correctamente por seguridad del sistema: [AssertionError] -> {error}")
-
-    try:
-        print("\nIntentando asignar puntuación negativa individual...")
-        brian.sumar_puntos(-5)
-    except AssertionError as error:
-        print(f"Capturado correctamente por seguridad del sistema: [AssertionError] -> {error}")
+        print(f"X Error de validación: {error}")
         
-    print("\n=== PROGRAMA FINALIZADO SIN ERRORES CRÍTICOS ===")
+    # Caso 3: Cupo de jugadores atrapado con try/except
+    print("\n[Caso de Error 3] Intentando agregar un sexto jugador a un mismo equipo:")
+    try:
+        # Ya tiene 2 jugadores, agregamos 3 más para llegar a 5
+        eq_dragones.agregar_jugador(Jugador("Player 3", "P3"))
+        eq_dragones.agregar_jugador(Jugador("Player 4", "P4"))
+        eq_dragones.agregar_jugador(Jugador("Player 5", "P5"))
+        # El sexto debe fallar
+        print("Intentando agregar el sexto jugador...")
+        eq_dragones.agregar_jugador(Jugador("Player 6", "P6"))
+    except AssertionError as error:
+        print(f"X Error de validación: {error}")
+        
+    # 6. Mostrar tabla de posiciones
+    torneo.tabla_posiciones()
+    
+    # 7. Guardar los datos y cargarlos nuevamente para verificar
+    print("--- Guardado y Carga de Persistencia ---")
+    torneo.guardar_datos()
+    
+    print("\nVerificando carga de los datos guardados en una nueva instancia:")
+    nuevo_torneo = Torneo("Copa UNIBE Esports (Cargado)")
+    nuevo_torneo.cargar_datos()
+    nuevo_torneo.tabla_posiciones()
+    
+    print("=== PROGRAMA FINALIZADO SIN ERRORES CRÍTICOS ===")
