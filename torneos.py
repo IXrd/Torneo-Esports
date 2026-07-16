@@ -229,7 +229,7 @@ if __name__ == "__main__":
     
     # Caso 1: Equipo inexistente
     print("\n[Caso de Error 1] Intentando programar partido con un equipo que no existe:")
-    torneo.programar_partido("Dragones", "TitanesInexistentes")
+    torneo.programar_partido("Unibe", "BarnaInexistentes")
     
     # Caso 2: Empate atrapado con try/except
     print("\n[Caso de Error 2] Intentando registrar un marcador con empate (No permitido):")
