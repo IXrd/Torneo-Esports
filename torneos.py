@@ -187,34 +187,34 @@ if __name__ == "__main__":
     
     # 3. Crear equipos y jugadores; agregarlos al torneo
     print("\n--- Creación de Equipos y Jugadores ---")
-    eq_dragones = Equipo("Dragones")
-    eq_titanes = Equipo("Titanes")
-    eq_fenix = Equipo("Fenix")
-    eq_valquirias = Equipo("Valquirias")
+    eq_unibe = Equipo("Unibe")
+    eq_barna = Equipo("Barna")
+    eq_pucmm = Equipo("Pucmm")
+    eq_intec = Equipo("Intec")
     
-    torneo.agregar_equipo(eq_dragones)
-    torneo.agregar_equipo(eq_titanes)
-    torneo.agregar_equipo(eq_fenix)
-    torneo.agregar_equipo(eq_valquirias)
+    torneo.agregar_equipo(eq_unibe)
+    torneo.agregar_equipo(eq_barna)
+    torneo.agregar_equipo(eq_pucmm)
+    torneo.agregar_equipo(eq_intec)
     
     # Agregar al menos 2 jugadores por equipo
-    eq_dragones.agregar_jugador(Jugador("Juan Perez", "DragonLord"))
-    eq_dragones.agregar_jugador(Jugador("Luis Gomez", "FireBreath"))
+    eq_unibe.agregar_jugador(Jugador("Andres Sanchez", "Fat"))
+    eq_unibe.agregar_jugador(Jugador("Brian Melo", "Garcia"))
     
-    eq_titanes.agregar_jugador(Jugador("Carlos Ruiz", "TitanShifter"))
-    eq_titanes.agregar_jugador(Jugador("Pedro Diaz", "Colossus"))
+    eq_barna.agregar_jugador(Jugador("Jose Pereda", "Alfredo"))
+    eq_barna.agregar_jugador(Jugador("Michael Bittar", "Elias"))
     
-    eq_fenix.agregar_jugador(Jugador("Ana Martinez", "PhoenixRise"))
-    eq_fenix.agregar_jugador(Jugador("Sofia Lopez", "Rebirth"))
+    eq_pucmm.agregar_jugador(Jugador("Jose Aristides", "Ciprian"))
+    eq_pucmm.agregar_jugador(Jugador("Diego Castellanos", "Padilla"))
     
-    eq_valquirias.agregar_jugador(Jugador("Maria Castro", "Valkyrie"))
-    eq_valquirias.agregar_jugador(Jugador("Elena Gil", "ShieldMaiden"))
+    eq_intec.agregar_jugador(Jugador("Juanico Cedano", "Comarazamy"))
+    eq_intec.agregar_jugador(Jugador("Juan Elias", "Curiel"))
     
     # 4. Programar partidos y registrar marcadores (sin empates)
     print("\n--- Programación de Partidos ---")
-    partido1 = torneo.programar_partido("Dragones", "Titanes")
-    partido2 = torneo.programar_partido("Fenix", "Valquirias")
-    partido3 = torneo.programar_partido("Dragones", "Fenix")
+    partido1 = torneo.programar_partido("Unibe", "Barna")
+    partido2 = torneo.programar_partido("Pucmm", "Intec")
+    partido3 = torneo.programar_partido("Unibe", "Pucmm")
     
     print("\n--- Registro de Resultados ---")
     if partido1:
@@ -243,12 +243,12 @@ if __name__ == "__main__":
     print("\n[Caso de Error 3] Intentando agregar un sexto jugador a un mismo equipo:")
     try:
         # Ya tiene 2 jugadores, agregamos 3 más para llegar a 5
-        eq_dragones.agregar_jugador(Jugador("Player 3", "P3"))
-        eq_dragones.agregar_jugador(Jugador("Player 4", "P4"))
-        eq_dragones.agregar_jugador(Jugador("Player 5", "P5"))
+        eq_unibe.agregar_jugador(Jugador("Player 3", "P3"))
+        eq_unibe.agregar_jugador(Jugador("Player 4", "P4"))
+        eq_unibe.agregar_jugador(Jugador("Player 5", "P5"))
         # El sexto debe fallar
         print("Intentando agregar el sexto jugador...")
-        eq_dragones.agregar_jugador(Jugador("Player 6", "P6"))
+        eq_unibe.agregar_jugador(Jugador("Player 6", "P6"))
     except AssertionError as error:
         print(f"X Error de validación: {error}")
         
